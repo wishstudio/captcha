@@ -7,7 +7,6 @@ package captcha
 import (
 	"net/http"
 	"path"
-	"strconv"
 	"strings"
 )
 
@@ -52,21 +51,6 @@ func (h *captchaHandler) serve(w http.ResponseWriter, id, ext string, lang strin
 			w.Header().Set("Content-Type", "image/png")
 		}
 		return WriteImage(w, id, h.imgWidth, h.imgHeight)
-	case ".wav":
-		//XXX(dchest) Workaround for Chrome: it wants content-length,
-		//or else will start playing NOT from the beginning.
-		//Filed issue: http://code.google.com/p/chromium/issues/detail?id=80565
-		d := globalStore.Get(id, false)
-		if d == nil {
-			return ErrNotFound
-		}
-		a := NewAudio(id, d, lang)
-		if !download {
-			w.Header().Set("Content-Type", "audio/x-wav")
-		}
-		w.Header().Set("Content-Length", strconv.Itoa(a.EncodedLen()))
-		_, err := a.WriteTo(w)
-		return err
 	}
 	return ErrNotFound
 }
